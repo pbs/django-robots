@@ -4,6 +4,7 @@ from cms.sitemaps import CMSSitemap
 from robots.settings import ADMIN
 from django.db.models import Q
 from itertools import chain
+from itertools import ifilterfalse, imap, izip
 
 ID_PREFIX = 'disallowed'
 
@@ -49,19 +50,17 @@ def get_choices(site, protocol):
     #    patterns to be displayed first in the left side box.
     f = Q(pattern__in=all_sitemap_patterns)
     db_sitemap_urls = Url.objects.filter(f).values_list('id', 'pattern').distinct()
-    db_sitemap_patterns = [url[1] for url in db_sitemap_urls]
+    db_sitemap_patterns = map(lambda url:url[1], db_sitemap_urls)
 
     # Generate some fake ids for the patterns that were not
     #  previously saved in the db
-    remaining_sitemap_patterns = [x for x in all_sitemap_patterns \
-                                  if x not in db_sitemap_patterns]
-    fake_ids = map(lambda x: '%s_%d' % (ID_PREFIX, x), \
-                   range(len(remaining_sitemap_patterns)))
+    remaining_sitemap_patterns = ifilterfalse(lambda x: x in db_sitemap_patterns, all_sitemap_patterns)
+    fake_ids = imap(lambda x: '%s_%d' % (ID_PREFIX, x), range(len(urls)))
 
     db_remaining_urls = Url.objects.exclude(f).values_list('id', 'pattern').distinct()
 
-    # returns a list of ['id', 'pattern'] pairs
-    return map(lambda x: list(x),
+    #returns a list of ['id', 'pattern'] pairs
+    return imap(lambda x: list(x),
                chain(db_sitemap_urls,
-                     zip(fake_ids, remaining_sitemap_patterns),
+                     izip(fake_ids, remaining_sitemap_patterns),
                      db_remaining_urls))

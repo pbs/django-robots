@@ -10,7 +10,8 @@ from robots import settings
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 
-from robots.helpers import get_choices
+from robots.helpers import get_choices, get_url
+from robots.settings import ADMIN
 from django.forms import SelectMultiple
 from django.utils.safestring import mark_safe
 
@@ -63,11 +64,10 @@ def site_patterns(request):
             protocol = 'https' if request.is_secure() else 'http'
 
             widget = SelectMultiple()
-            widget.choices = get_choices(site, protocol)
+            widget.choices = (get_choices(site, protocol))
 
             attrs = {'id': u'id_disallowed', 'class': 'selectfilter'}
-            initial_selection = next((c[0] for c in widget.choices if c[1] == settings.ADMIN), '')
-            output = [widget.render('disallowed', [initial_selection], attrs=attrs, choices=())]
+            output = [widget.render('disallowed', [get_url(ADMIN).id], attrs=attrs, choices=())]
 
             return HttpResponse(mark_safe(u''.join(output)))
 
