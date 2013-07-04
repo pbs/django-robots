@@ -34,6 +34,9 @@ def get_choices(site, protocol):
     Some of the ids are real db ids, and others (like disallowed_3) are fake ones
     (generated here).
     """
+    def get_slug(url):
+        return url['location'].replace("%s://%s" % (protocol, site.domain), '')
+
     # Make sure that the '/admin/' pattern is allways present
     #  in the choice list
     get_url(ADMIN)
@@ -42,7 +45,7 @@ def get_choices(site, protocol):
     saved_site = settings.__class__.SITE_ID.value
     settings.__class__.SITE_ID.value = site.id
     urls = CMSSitemap().get_urls(site=site, protocol=protocol)
-    all_sitemap_patterns = map(lambda item: item['location'].replace("%s://%s" % (protocol, site.domain), ''), urls)
+    all_sitemap_patterns = map(lambda item: get_slug(item), urls)
     settings.__class__.SITE_ID.value = saved_site
 
     #Some patterns are already present in the db and I need their real ids
