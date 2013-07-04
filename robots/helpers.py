@@ -33,28 +33,38 @@ def get_choices(site, protocol):
     Some of the ids are real db ids, and others (like disallowed_3) are fake ones
     (generated here).
     """
+    # Make sure that the '/admin/' pattern is allways present
+    #  in the choice list
+    get_url(ADMIN)
 
     #generate patterns from the sitemap
     saved_site = settings.__class__.SITE_ID.value
     settings.__class__.SITE_ID.value = site.id
     urls = CMSSitemap().get_urls(site=site, protocol=protocol)
-    all_patterns = map(lambda item: item['location'].replace("%s://%s" % (protocol, site.domain), ''), urls)
+    all_sitemap_patterns = map(lambda item: item['location'].replace("%s://%s" % (protocol, site.domain), ''), urls)
     settings.__class__.SITE_ID.value = saved_site
 
-    #some patterns are already present in the db and I need their real ids
-    f = Q(pattern__in=all_patterns) | Q(disallowed__in=site.rule_set.all())
-    db_urls = Url.objects.filter(f).values_list('id', 'pattern').distinct()
-    db_ids, db_patterns = ([], []) if not db_urls.exists() else zip(*db_urls)
+    #Some patterns are already present in the db and I need their real ids
+    #This processing step could have been avoided, but I need the sitemap
+    #    patterns to be displayed first in the left side box.
+    f = Q(pattern__in=all_sitemap_patterns) | \
+        Q(disallowed__in=site.rule_set.all())
+    db_sitemap_urls = Url.objects.filter(f).values_list('id', 'pattern').distinct()
+    db_sitemap_ids, db_sitemap_patterns = ([], []) if not db_sitemap_urls.exists() \
+                                          else zip(*db_sitemap_urls)
 
     # Generate some fake ids for the patterns that were not
     #  previously saved in the db
-    remaining_patterns = [x for x in all_patterns if x not in db_patterns]
-    fake_ids = map(lambda x: '%s_%d' % (ID_PREFIX, x), range(len(remaining_patterns)))
+    remaining_sitemap_patterns = [x for x in all_sitemap_patterns \
+                                  if x not in db_sitemap_patterns]
+    fake_ids = map(lambda x: '%s_%d' % (ID_PREFIX, x), \
+                   range(len(remaining_sitemap_patterns)))
 
-    # Make sure that the '/admin/' pattern is allways present
-    #  in the choice list
-    admin = get_url(ADMIN)
-    admin_pair = [[str(admin.id), admin.pattern]] if not admin.id in db_ids else []
+    db_remaining_urls = Url.objects.exclude(pattern__in=db_sitemap_patterns).\
+                        values_list('id', 'pattern').distinct()
 
     # returns a list of ['id', 'pattern'] pairs
-    return map(lambda x: list(x), chain(admin_pair, db_urls, zip(fake_ids, remaining_patterns)))
+    return map(lambda x: list(x),
+               chain(db_sitemap_urls,
+                     zip(fake_ids, remaining_sitemap_patterns),
+                     db_remaining_urls))

@@ -30,8 +30,8 @@ class TestRules(TestCase):
 
         choices = get_choices(self.site, 'http')
 
-        self.assertListEqual(choices, \
-            [['1', '/admin/'], ['disallowed_0', u'/'],
+        self.assertItemsEqual(choices, \
+            [[1, '/admin/'], ['disallowed_0', u'/'],
              ['disallowed_1', u'/page2/'], ['disallowed_2', u'/page3/'],
              ['disallowed_3', u'/page4/'], ['disallowed_4', u'/page4/page41/'],
              ['disallowed_5', u'/page4/page42/']])
@@ -44,8 +44,8 @@ class TestRules(TestCase):
         rule.disallowed.add(url1)
 
         choices = get_choices(self.site, 'http')
-        self.assertListEqual(choices, \
-            [['3', '/admin/'], [1, u'/default/'], [2, u'/page2/'],
+        self.assertItemsEqual(choices, \
+            [[3, '/admin/'], [1, u'/default/'], [2, u'/page2/'],
              ['disallowed_0', u'/'], ['disallowed_1', u'/page3/'],
              ['disallowed_2', u'/page4/'], ['disallowed_3', u'/page4/page41/'],
              ['disallowed_4', u'/page4/page42/']])
@@ -57,14 +57,14 @@ class TestRules(TestCase):
 
         #/admin/ is selected by default
         selection_tag = \
-"""<select multiple="multiple" class="selectfilter" name="disallowed" id="id_disallowed">
-<option value="1" selected="selected">/admin/</option>
+""" <select multiple="multiple" class="selectfilter" name="disallowed" id="id_disallowed">
 <option value="disallowed_0">/</option>
 <option value="disallowed_1">/page2/</option>
 <option value="disallowed_2">/page3/</option>
 <option value="disallowed_3">/page4/</option>
 <option value="disallowed_4">/page4/page41/</option>
 <option value="disallowed_5">/page4/page42/</option>
+<option value="1" selected="selected">/admin/</option>
 </select>"""
 
         self.assertTrue(selection_tag in response.content)
