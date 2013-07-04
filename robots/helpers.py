@@ -47,11 +47,9 @@ def get_choices(site, protocol):
     #Some patterns are already present in the db and I need their real ids
     #This processing step could have been avoided, but I need the sitemap
     #    patterns to be displayed first in the left side box.
-    f = Q(pattern__in=all_sitemap_patterns) | \
-        Q(disallowed__in=site.rule_set.all())
+    f = Q(pattern__in=all_sitemap_patterns)
     db_sitemap_urls = Url.objects.filter(f).values_list('id', 'pattern').distinct()
-    db_sitemap_ids, db_sitemap_patterns = ([], []) if not db_sitemap_urls.exists() \
-                                          else zip(*db_sitemap_urls)
+    db_sitemap_patterns = [url[1] for url in db_sitemap_urls]
 
     # Generate some fake ids for the patterns that were not
     #  previously saved in the db
@@ -60,8 +58,7 @@ def get_choices(site, protocol):
     fake_ids = map(lambda x: '%s_%d' % (ID_PREFIX, x), \
                    range(len(remaining_sitemap_patterns)))
 
-    db_remaining_urls = Url.objects.exclude(pattern__in=db_sitemap_patterns).\
-                        values_list('id', 'pattern').distinct()
+    db_remaining_urls = Url.objects.exclude(f).values_list('id', 'pattern').distinct()
 
     # returns a list of ['id', 'pattern'] pairs
     return map(lambda x: list(x),

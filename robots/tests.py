@@ -84,14 +84,14 @@ class TestRules(TestCase):
 
         selection_tag = \
 """<select multiple="multiple" class="selectfilter" name="disallowed" id="id_disallowed">
-<option value="1" selected="selected">/admin/</option>
-<option value="2" selected="selected">/default/</option>
 <option value="3" selected="selected">/page2/</option>
 <option value="disallowed_0">/</option>
 <option value="disallowed_1">/page3/</option>
 <option value="disallowed_2">/page4/</option>
 <option value="disallowed_3">/page4/page41/</option>
 <option value="disallowed_4">/page4/page42/</option>
+<option value="1" selected="selected">/admin/</option>
+<option value="2" selected="selected">/default/</option>
 </select>"""
 
         self.assertTrue(selection_tag in response.content)
