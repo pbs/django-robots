@@ -64,7 +64,7 @@ def site_patterns(request):
             protocol = 'https' if request.is_secure() else 'http'
 
             widget = SelectMultiple()
-            widget.choices = (get_choices(site, protocol))
+            widget.choices = get_choices(site, protocol)
 
             attrs = {'id': u'id_disallowed', 'class': 'selectfilter'}
             output = [widget.render('disallowed', [get_url(ADMIN).id], attrs=attrs, choices=())]
