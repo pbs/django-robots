@@ -1,6 +1,5 @@
 from django.conf import settings
 from robots.models import Url
-from cms.sitemaps import CMSSitemap
 from robots.settings import ADMIN
 from django.db.models import Q
 from itertools import chain
@@ -44,7 +43,7 @@ def get_choices(site, protocol):
     #generate patterns from the sitemap
     saved_site = settings.__class__.SITE_ID.value
     settings.__class__.SITE_ID.value = site.id
-    urls = CMSSitemap().get_urls(site=site, protocol=protocol)
+    urls = get_sitemap_urls(site=site, protocol=protocol)
     all_sitemap_patterns = map(get_slug, urls)
     settings.__class__.SITE_ID.value = saved_site
 
@@ -67,3 +66,28 @@ def get_choices(site, protocol):
                chain(db_sitemap_urls,
                      izip(fake_ids, remaining_sitemap_patterns),
                      db_remaining_urls))
+
+
+def get_sitemap_urls(site, protocol):
+    from django.core.urlresolvers import get_resolver, Resolver404
+
+    try:
+        sitemap_resolver_match = get_resolver(None).resolve('/sitemap.xml')
+    except Resolver404:
+        return []
+
+    sitemaps = sitemap_resolver_match.kwargs.get('sitemaps', None)
+    if not sitemaps:
+        return []
+    maps = sitemaps.values()
+
+    urls = []
+    for sitemap in maps:
+        try:
+            if callable(sitemap):
+                sitemap = sitemap()
+            urls.extend(sitemap.get_urls(site=site, protocol=protocol))
+        except:
+            pass
+
+    return urls

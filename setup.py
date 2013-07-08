@@ -29,7 +29,7 @@ setup(
     tests_require=[
         'django-nose',
         'django-cms==2.3.3',
-        'djangotoolbox'
+        'djangotoolbox',
     ],
     test_suite='runtests.runtests',
 )
