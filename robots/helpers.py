@@ -4,6 +4,9 @@ from robots.settings import ADMIN
 from django.db.models import Q
 from itertools import chain
 from itertools import ifilterfalse, imap, izip
+from django.utils.functional import memoize
+from django.utils.importlib import import_module
+
 
 ID_PREFIX = 'disallowed'
 
@@ -68,21 +71,35 @@ def get_choices(site, protocol):
                      db_remaining_urls))
 
 
+def get_sitemaps_kwarg_breadth_first_search(root):
+    if not root:
+        mod = import_module(settings.ROOT_URLCONF)
+        url_patterns = mod.urlpatterns
+    else:
+        url_patterns = getattr(root, 'url_patterns', [])
+
+    for urlpattern in url_patterns:
+        if 'sitemap.xml' in urlpattern.regex.pattern:
+            return urlpattern.default_args
+
+    for urlpattern in url_patterns:
+        res = get_sitemaps_kwarg_breadth_first_search(urlpattern)
+        if res:
+            return res
+    return {}
+
+
+def get_sitemaps_kwarg():
+    return get_sitemaps_kwarg_breadth_first_search(None)
+
+_resolver_cache = {}
+get_sitemaps_kwarg = memoize(get_sitemaps_kwarg, _resolver_cache, 1)
+
+
 def get_sitemap_urls(site, protocol):
-    from django.core.urlresolvers import get_resolver, Resolver404
-
-    try:
-        sitemap_resolver_match = get_resolver(None).resolve('/sitemap.xml')
-    except Resolver404:
-        return []
-
-    sitemaps = sitemap_resolver_match.kwargs.get('sitemaps', None)
-    if not sitemaps:
-        return []
-    maps = sitemaps.values()
-
+    sitemaps = get_sitemaps_kwarg().get('sitemaps', {})
     urls = []
-    for sitemap in maps:
+    for sitemap in sitemaps.values():
         try:
             if callable(sitemap):
                 sitemap = sitemap()
