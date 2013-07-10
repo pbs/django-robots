@@ -13,9 +13,6 @@ from django.core.urlresolvers import NoReverseMatch
 
 class CustomDisallowedWidget(FilteredSelectMultiple):
 
-    # def __init__(self, verbose_name, is_stacked):
-    #     super(CustomDisallowedWidget ,self).__init__(verbose_name, is_stacked)
-
     def render(self, name, value, attrs=None, choices=()):
         output = [super(CustomDisallowedWidget, self).render(name, value, attrs, choices)]
 
