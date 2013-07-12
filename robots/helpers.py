@@ -46,7 +46,7 @@ def get_choices(site, protocol):
     #generate patterns from the sitemap
     saved_site = settings.__class__.SITE_ID.value
     settings.__class__.SITE_ID.value = site.id
-    urls = get_sitemap_urls(site=site, protocol=protocol)
+    urls = get_sitemap(site=site, protocol=protocol)
     all_sitemap_patterns = map(get_slug, urls)
     settings.__class__.SITE_ID.value = saved_site
 
@@ -71,7 +71,11 @@ def get_choices(site, protocol):
                      db_remaining_urls))
 
 
-def get_sitemaps_kwarg_breadth_first_search(root):
+def get_sitemap_xml(root=None):
+    """
+    Performs a breadth-first search through the url patterns defined in ROOT_URLCONF
+    to find sitemap.xml slug
+    """
     if not root:
         mod = import_module(settings.ROOT_URLCONF)
         url_patterns = mod.urlpatterns
@@ -83,21 +87,18 @@ def get_sitemaps_kwarg_breadth_first_search(root):
             return urlpattern.default_args
 
     for urlpattern in url_patterns:
-        res = get_sitemaps_kwarg_breadth_first_search(urlpattern)
+        res = get_sitemap_xml(urlpattern)
         if res:
             return res
     return {}
 
 
-def get_sitemaps_kwarg():
-    return get_sitemaps_kwarg_breadth_first_search(None)
-
 _resolver_cache = {}
-get_sitemaps_kwarg = memoize(get_sitemaps_kwarg, _resolver_cache, 1)
+get_sitemap_xml = memoize(get_sitemap_xml, _resolver_cache, 1)
 
 
-def get_sitemap_urls(site, protocol):
-    sitemaps = get_sitemaps_kwarg().get('sitemaps', {})
+def get_sitemap(site, protocol):
+    sitemaps = get_sitemap_xml().get('sitemaps', {})
     urls = []
     for sitemap in sitemaps.values():
         try:
