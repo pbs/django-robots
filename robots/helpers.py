@@ -1,9 +1,12 @@
 from django.conf import settings
 from robots.models import Url
-from cms.sitemaps import CMSSitemap
 from robots.settings import ADMIN
 from django.db.models import Q
 from itertools import chain
+from itertools import ifilterfalse, imap, izip
+from django.utils.functional import memoize
+from django.utils.importlib import import_module
+
 
 ID_PREFIX = 'disallowed'
 
@@ -33,28 +36,76 @@ def get_choices(site, protocol):
     Some of the ids are real db ids, and others (like disallowed_3) are fake ones
     (generated here).
     """
+    def get_slug(url):
+        return url['location'].replace("%s://%s" % (protocol, site.domain), '')
+
+    # Make sure that the '/admin/' pattern is allways present
+    #  in the choice list
+    get_url(ADMIN)
 
     #generate patterns from the sitemap
     saved_site = settings.__class__.SITE_ID.value
     settings.__class__.SITE_ID.value = site.id
-    urls = CMSSitemap().get_urls(site=site, protocol=protocol)
-    all_patterns = map(lambda item: item['location'].replace("%s://%s" % (protocol, site.domain), ''), urls)
+    urls = get_sitemap(site=site, protocol=protocol)
+    all_sitemap_patterns = map(get_slug, urls)
     settings.__class__.SITE_ID.value = saved_site
 
-    #some patterns are already present in the db and I need their real ids
-    f = Q(pattern__in=all_patterns) | Q(disallowed__in=site.rule_set.all())
-    db_urls = Url.objects.filter(f).values_list('id', 'pattern').distinct()
-    db_ids, db_patterns = ([], []) if not db_urls.exists() else zip(*db_urls)
+    #Some patterns are already present in the db and I need their real ids
+    #This processing step could have been avoided, but I need the sitemap
+    #    patterns to be displayed first in the left side box.
+    f = Q(pattern__in=all_sitemap_patterns)
+    db_sitemap_urls = Url.objects.filter(f).values_list('id', 'pattern').distinct()
+    db_sitemap_patterns = map(lambda url:url[1], db_sitemap_urls)
 
     # Generate some fake ids for the patterns that were not
     #  previously saved in the db
-    remaining_patterns = [x for x in all_patterns if x not in db_patterns]
-    fake_ids = map(lambda x: '%s_%d' % (ID_PREFIX, x), range(len(remaining_patterns)))
+    remaining_sitemap_patterns = ifilterfalse(lambda x: x in db_sitemap_patterns, all_sitemap_patterns)
+    fake_ids = imap(lambda x: '%s_%d' % (ID_PREFIX, x), range(len(urls)))
 
-    # Make sure that the '/admin/' pattern is allways present
-    #  in the choice list
-    admin = get_url(ADMIN)
-    admin_pair = [[str(admin.id), admin.pattern]] if not admin.id in db_ids else []
+    db_remaining_urls = Url.objects.exclude(f).values_list('id', 'pattern').distinct()
 
-    # returns a list of ['id', 'pattern'] pairs
-    return map(lambda x: list(x), chain(admin_pair, db_urls, zip(fake_ids, remaining_patterns)))
+    #returns a list of ['id', 'pattern'] pairs
+    return imap(lambda x: list(x),
+               chain(db_sitemap_urls,
+                     izip(fake_ids, remaining_sitemap_patterns),
+                     db_remaining_urls))
+
+
+def get_sitemap_xml(root=None):
+    """
+    Performs a breadth-first search through the url patterns defined in ROOT_URLCONF
+    to find sitemap.xml slug
+    """
+    if not root:
+        mod = import_module(settings.ROOT_URLCONF)
+        url_patterns = mod.urlpatterns
+    else:
+        url_patterns = getattr(root, 'url_patterns', [])
+
+    for urlpattern in url_patterns:
+        if 'sitemap.xml' in urlpattern.regex.pattern:
+            return urlpattern.default_args
+
+    for urlpattern in url_patterns:
+        res = get_sitemap_xml(urlpattern)
+        if res:
+            return res
+    return {}
+
+
+_resolver_cache = {}
+get_sitemap_xml = memoize(get_sitemap_xml, _resolver_cache, 1)
+
+
+def get_sitemap(site, protocol):
+    sitemaps = get_sitemap_xml().get('sitemaps', {})
+    urls = []
+    for sitemap in sitemaps.values():
+        try:
+            if callable(sitemap):
+                sitemap = sitemap()
+            urls.extend(sitemap.get_urls(site=site, protocol=protocol))
+        except:
+            pass
+
+    return urls
