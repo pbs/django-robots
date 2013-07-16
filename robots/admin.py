@@ -47,7 +47,7 @@ class RuleAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         super(RuleAdmin, self).save_model(request, obj, form, change)
-        all_pattern = get_url('/*')
+        all_pattern = get_url('/')
         obj.allowed.add(all_pattern)
 
 
