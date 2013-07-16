@@ -51,8 +51,8 @@ class Rule(models.Model):
                                         verbose_name=_('disallowed'),
                                         help_text=_("List URL paths that are "
                                                     "not allowed to be accessed by bots "
-                                                    "(You don't need to disallow every URL,"
-                                                    "as it'll block anything matching a string"
+                                                    "(You don't need to disallow every URL, "
+                                                    "as it'll block anything matching a string "
                                                     "starting with a listed path.)"))
     sites = models.ManyToManyField(Site, verbose_name=_('sites'))
 
