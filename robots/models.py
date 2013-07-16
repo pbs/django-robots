@@ -49,9 +49,11 @@ class Rule(models.Model):
 
     disallowed = models.ManyToManyField(Url, blank=True, related_name="disallowed",
                                         verbose_name=_('disallowed'),
-                                        help_text=_("The URLs which are not "
-                                                    "allowed to be accessed "
-                                                    "by bots."))
+                                        help_text=_("List URL paths that are "
+                                                    "not allowed to be accessed by bots "
+                                                    "(You don't need to disallow every URL,"
+                                                    "as it'll block anything matching a string"
+                                                    "starting with a listed path.)"))
     sites = models.ManyToManyField(Site, verbose_name=_('sites'))
 
     crawl_delay = models.DecimalField(_('crawl delay'), default=5.0,
