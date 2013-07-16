@@ -53,7 +53,7 @@ class Rule(models.Model):
                                                     "not allowed to be accessed by bots "
                                                     "(You don't need to disallow every URL, "
                                                     "as it'll block anything matching a string "
-                                                    "starting with a listed path.)"))
+                                                    "starting with a listed path.)."))
     sites = models.ManyToManyField(Site, verbose_name=_('sites'))
 
     crawl_delay = models.DecimalField(_('crawl delay'), default=5.0,
