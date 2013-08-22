@@ -12,14 +12,12 @@ INSTALLED_APPS = [
     'menus',
     'sekizai',
     'robots',
-    'django_nose',
 ]
 
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 CMS_PERMISSION = True
 STATIC_ROOT = '/static/'
 STATIC_URL = '/static/'
-ROOT_URLCONF = 'urls_test'
+ROOT_URLCONF = 'robots.urls_test'
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.request',
     'django.contrib.auth.context_processors.auth',
@@ -64,3 +62,4 @@ settings.__class__.SITE_ID.value = 1
 CMS_TEMPLATES = (
     ('test.html', gettext('test one')),
 )
+JUXD_FILENAME = 'utests_report.xml'
