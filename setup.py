@@ -27,10 +27,4 @@ setup(
       'Framework :: Django',
     ],
     setup_requires = ['s3sourceuploader',],
-    tests_require=[
-        'django-nose',
-        'django-cms==2.3.3',
-        'djangotoolbox',
-    ],
-    test_suite='runtests.runtests',
 )

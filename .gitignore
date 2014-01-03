@@ -2,5 +2,6 @@
 dist
 *.egg-info
 *.egg
-build
-echo .tox
+djrunner-results.xml
+pytest-results.xml
+.tox

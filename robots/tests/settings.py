@@ -17,7 +17,7 @@ INSTALLED_APPS = [
 CMS_PERMISSION = True
 STATIC_ROOT = '/static/'
 STATIC_URL = '/static/'
-ROOT_URLCONF = 'robots.urls_test'
+ROOT_URLCONF = 'robots.tests.urls'
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.request',
     'django.contrib.auth.context_processors.auth',
@@ -52,7 +52,7 @@ TEMPLATE_LOADERS = (
 )
 
 TEMPLATE_DIRS = (
-    os.path.join(HERE, 'test-templates'),
+    os.path.join(os.path.dirname(HERE), 'test-templates'),
 )
 from djangotoolbox.utils import make_tls_property
 from django.conf import settings
@@ -62,4 +62,4 @@ settings.__class__.SITE_ID.value = 1
 CMS_TEMPLATES = (
     ('test.html', gettext('test one')),
 )
-JUXD_FILENAME = './.junit-report.xml'
+JUXD_FILENAME = './.djrunner-results.xml'
