@@ -62,4 +62,3 @@ settings.__class__.SITE_ID.value = 1
 CMS_TEMPLATES = (
     ('test.html', gettext('test one')),
 )
-JUXD_FILENAME = './djrunner-results.xml'

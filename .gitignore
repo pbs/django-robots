@@ -2,6 +2,5 @@
 dist
 *.egg-info
 *.egg
-djrunner-results.xml
 pytest-results.xml
 .tox
