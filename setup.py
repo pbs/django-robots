@@ -14,7 +14,7 @@ setup(
         'robots': [
             'locale/*/LC_MESSAGES/*',
             'templates/robots/*.html',
-            'test-templates/*.html',
+            'tests/templates/*.html',
         ],
     },
     classifiers=[

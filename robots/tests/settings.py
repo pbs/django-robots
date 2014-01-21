@@ -52,7 +52,7 @@ TEMPLATE_LOADERS = (
 )
 
 TEMPLATE_DIRS = (
-    os.path.join(os.path.dirname(HERE), 'test-templates'),
+    os.path.join(HERE, 'templates'),
 )
 from djangotoolbox.utils import make_tls_property
 from django.conf import settings
