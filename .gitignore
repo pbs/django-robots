@@ -4,3 +4,4 @@ dist
 *.egg
 build
 .tox
+*.pyo
