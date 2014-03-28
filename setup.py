@@ -14,7 +14,7 @@ setup(
         'robots': [
             'locale/*/LC_MESSAGES/*',
             'templates/robots/*.html',
-            'test-templates/*.html',
+            'tests/templates/*.html',
         ],
     },
     classifiers=[
@@ -27,10 +27,4 @@ setup(
       'Framework :: Django',
     ],
     setup_requires = ['s3sourceuploader',],
-    tests_require=[
-        'django-nose',
-        'django-cms==2.3.3',
-        'djangotoolbox',
-    ],
-    test_suite='runtests.runtests',
 )

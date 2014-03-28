@@ -2,6 +2,7 @@
 dist
 *.egg-info
 *.egg
-build
+pytest-results.xml
 .tox
 *.pyo
+full.log
