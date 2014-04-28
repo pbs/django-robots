@@ -1,12 +1,15 @@
 from itertools import chain
 from itertools import ifilterfalse, imap, izip
 from contextlib import contextmanager
+import urlparse
 
 from django.conf import settings
 from django.db.models import Q
 from django.utils.functional import memoize, partition
 from django.utils.importlib import import_module
+from django.utils.encoding import force_unicode
 from django.contrib.sites.models import Site
+from django.core.urlresolvers import reverse
 
 from robots.models import Url
 from robots.settings import ADMIN
@@ -82,40 +85,6 @@ def get_sitemap(site, protocol):
     )
     
     return locations
-
-
-# methinks this is better
-
-import xml.etree.ElementTree
-import urllib2
-import urlparse
-
-from django.core.urlresolvers import reverse
-from django.utils.encoding import force_unicode
-
-def fetch_resource(url):
-    opener = urllib2.urlopen(url)
-    data = opener.read()
-    return data
-
-
-def xml_reader(xml_string):
-    tree = xml.etree.ElementTree.fromstring(xml_string)
-    return tree
-
-def fetch_sitemap_locations(site, protocol='http'):
-    scheme, netloc, path = protocol, site.domain, '/sitemap.xml'
-    url = urlparse.urlunparse((scheme, netloc, path, '', '', ''))
-    data = fetch_resource(url)
-    document = xml_reader(data)
-    location_tag = '{http://www.sitemaps.org/schemas/sitemap/0.9}loc'
-    url_nodes = document.iter(location_tag)
-    urls = map(lambda node: node.text, url_nodes)
-    relative_urls = map(
-        lambda url: urlparse.urlparse(url).path,
-        urls
-    )
-    return relative_urls
 
 
 def head2unicode((head,tail)):
