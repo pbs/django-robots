@@ -76,14 +76,14 @@ class TestRules(TestCase):
 
         #/admin/ is selected by default
         selection_tag = \
-""" <select multiple="multiple" class="selectfilter" name="disallowed" id="id_disallowed">
+"""<select multiple="multiple" class="selectfilter" name="disallowed" id="id_disallowed">
+<option value="disallowed_5">/</option>
 <option value="disallowed_0" selected="selected">/admin/</option>
 <option value="disallowed_1">/page2/</option>
-<option value="disallowed_2">/page4/page41/</option>
 <option value="disallowed_3">/page3/</option>
-<option value="disallowed_4">/page4/page42/</option>
-<option value="disallowed_5">/</option>
 <option value="disallowed_6">/page4/</option>
+<option value="disallowed_2">/page4/page41/</option>
+<option value="disallowed_4">/page4/page42/</option>
 </select>"""
         self.assertIn(selection_tag, response.content)
 
@@ -103,12 +103,12 @@ class TestRules(TestCase):
 
         selection_tag = \
 """<select multiple="multiple" class="selectfilter" name="disallowed" id="id_disallowed">
+<option value="disallowed_3">/</option>
 <option value="1" selected="selected">/admin/</option>
 <option value="3" selected="selected">/page2/</option>
-<option value="disallowed_0">/page4/page41/</option>
 <option value="disallowed_1">/page3/</option>
-<option value="disallowed_2">/page4/page42/</option>
-<option value="disallowed_3">/</option>
 <option value="disallowed_4">/page4/</option>
+<option value="disallowed_0">/page4/page41/</option>
+<option value="disallowed_2">/page4/page42/</option>
 </select>"""
         self.assertIn(selection_tag, response.content)

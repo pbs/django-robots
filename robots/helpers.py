@@ -9,10 +9,10 @@ from django.utils.functional import memoize, partition
 from django.utils.importlib import import_module
 from django.utils.encoding import force_unicode
 from django.contrib.sites.models import Site
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, resolve
 
 from robots.models import Url
-from robots.settings import ADMIN
+from robots.settings import EXCLUDE_URL_NAMES
 
 ID_PREFIX = 'disallowed'
 
@@ -62,28 +62,13 @@ def get_sitemap(site, protocol):
         try:
             if callable(sitemap):
                 sitemap = sitemap()
-            # page is 1 by default for get_urls method
-            page = 1
-            # iterate through cms pages and set homepage when found in order
-            #   to not execute expensive queries just to re-fetch it for
-            #   each root page
-            homepage_pk = None
-            site_pages = sitemap.paginator.page(page).object_list
-            for page in site_pages:
-                if not homepage_pk:
-                    if page.is_home():
-                        homepage_pk = page.pk
-                else:
-                    page.home_pk_cache = homepage_pk
             urls.extend(sitemap.get_urls(site=site, protocol=protocol))
         except:
             pass
-
     locations = map(
         lambda item: urlparse.urlparse(item['location']).path,
         urls
     )
-    
     return locations
 
 
@@ -102,10 +87,15 @@ def get_choices(site, protocol='http'):
     (generated here).
     """
     admin_url = reverse('admin:index')
-    
+
     def fetch_urls():
-        return get_sitemap(site, protocol)
-     
+        urls = [
+            url
+            for url in get_sitemap(site, protocol)
+            if resolve(url).url_name not in EXCLUDE_URL_NAMES
+        ]
+        return urls
+        
     with patch(settings, fetch_urls, SITE_ID=site.pk) as result:
         sitemap_urls = result
     site_urls = [admin_url] + sitemap_urls
@@ -121,7 +111,10 @@ def get_choices(site, protocol='http'):
         enumerate(non_existing)
     )
     existing_options = map(head2unicode, existing_url_pairs)
-    options = existing_options + non_existing_options
+    options = sorted(
+        existing_options + non_existing_options,
+        key=lambda (_, pattern): pattern
+    )
     return options
 
 

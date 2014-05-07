@@ -20,7 +20,7 @@ if SITEMAP_URL is not None:
     SITEMAP_URLS.append(SITEMAP_URL)
 
 USE_SITEMAP = getattr(settings, 'ROBOTS_USE_SITEMAP', True)
-
+EXCLUDE_URL_NAMES = getattr(settings, 'ROBOTS_EXCLUDE_URL_NAMES', [])
 CACHE_TIMEOUT = getattr(settings, 'ROBOTS_CACHE_TIMEOUT', None)
 
 ADMIN = '/admin/'
