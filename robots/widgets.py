@@ -16,7 +16,8 @@ class FilteredSelect(Select):
         output = super(FilteredSelect, self).render(
             name, value, attrs=attrs, choices=choices)
 
-        template = loader.get_template("robots/filtered_select_widget.html")
+        template = loader.get_template(
+            "admin/robots/widgets/filtered_select_widget.html")
         context = Context({
             'select_widget_output' : output,
             'STATIC_URL': settings.STATIC_URL,
