@@ -1,88 +1,78 @@
 from django import forms
-from django.utils.translation import ugettext_lazy as _
-from robots.models import Rule, Url
 from django.contrib.sites.models import Site
-from robots.helpers import ID_PREFIX, get_site_id, get_choices
+from django.core.urlresolvers import reverse
+from robots.models import Rule
+from robots.widgets import FilteredSelect, AjaxFilteredSelectMultiple
+from robots.helpers import get_url
 from robots.settings import ADMIN
 
 
-class RuleAdminForm(forms.ModelForm):
+def _set_cms_site(request, site):
+    if request:
+        # used by django cms; designates the current wokring site
+        # this should not change anything when cms is not installed
+        request.session['cms_admin_site'] = site.pk
+
+
+class AddRuleAdminForm(forms.ModelForm):
+    requires_request = True
+
     class Meta:
         model = Rule
-
-    search_fields = ('sites')
-    ERR_EMPTY_DISALLOWED = _('Please specify at least one disallowed URL.')
-    ERR_ADMIN_IN_DISALLOWED = _('/admin/ pattern must be disallowed by default. Please select it in the chosen list.')
+        fields = ('sites', )
+        widgets = {'sites': FilteredSelect()}
 
     def __init__(self, *args, **kwargs):
-        super(RuleAdminForm, self).__init__(*args, **kwargs)
-        site_id = get_site_id(self.data, self.instance, self.fields['sites'])
-        self._initialize_sites_field(site_id)
-        self._initialize_disallowed_field(site_id)
+        self.request = kwargs.pop('request', None)
+        super(AddRuleAdminForm, self).__init__(*args, **kwargs)
+        self._init_sites()
 
-    def _initialize_sites_field(self, site_id):
+    def _init_sites(self):
         sites_field = self.fields['sites']
         sites_field.help_text = ''
-        sites_field.widget.can_add_related = None
-        qs = sites_field.queryset
-        if self._is_new_rule():
-            # new rules can only be set for sites with rule=null
-            qs = qs.filter(rule__isnull=True)
-        else:
-            # The site for existing rules cannot be changed
-            qs = qs.filter(pk=site_id)
-        sites_field.queryset = qs
+        sites_field.label = 'Site'
+        sites_field.widget.can_add_related = False
+        sites_field.queryset = sites_field.queryset.filter(rule__isnull=True)
+        current_site = Site.objects.get_current()
+        if (not self.initial.get('sites') and
+                sites_field.queryset.filter(id=current_site.id).exists()):
+            self.initial['sites'] = current_site
 
-    def _initialize_disallowed_field(self, site_id):
-        selected_site = Site.objects.get(pk=site_id)
+    def clean_sites(self):
+        sites = self.cleaned_data.get('sites', [])
+        if not sites or len(sites) > 1:
+            raise forms.ValidationError("One site required.")
+        if Rule.objects.filter(sites=sites).exists():
+            raise forms.ValidationError(
+                "Rule for this site already exists. "
+                "You can change it from the list view.")
+        _set_cms_site(self.request, sites[0])
+        return sites
+
+
+class RuleAdminForm(forms.ModelForm):
+    requires_request = True
+
+    class Meta:
+        model = Rule
+        widgets = {
+            'disallowed': AjaxFilteredSelectMultiple(
+                verbose_name='Disallows', is_stacked=False)
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super(RuleAdminForm, self).__init__(*args, **kwargs)
+        _set_cms_site(self.request, self.instance.site)
+        self._initialize_disallowed_field()
+
+    def _initialize_disallowed_field(self):
         disallowed_field = self.fields['disallowed']
-        disallowed_field.choices = get_choices(selected_site, 'http')
-        if self._is_new_rule():
-            #/admin/ pattern is allways default
-            admin_id = self._get_admin_id(disallowed_field.choices) or ''
-            self.initial = {'disallowed': [admin_id]}
-
-    def _get_admin_id(self, choices):
-        return next((c[0] for c in choices if c[1] == ADMIN), None)
-
-    def _is_new_rule(self):
-        return self.instance and not self.instance.id
+        disallowed_field.widget.widget.choices_url = reverse(
+            'admin:robots_current_site_urls', args=(self.instance.pk, ))
+        # this is prepopulated with choices from robots_current_site_urls
+        disallowed_field.choices = ()
 
     def clean_disallowed(self):
-        if not self.cleaned_data.get("disallowed", False):
-            raise forms.ValidationError(self.ERR_EMPTY_DISALLOWED)
-        self._check_admin_is_present()
-        return self.cleaned_data['disallowed']
-
-    def _check_admin_is_present(self):
-        field = self.fields['disallowed']
-        selected_values = field.widget.value_from_datadict(self.data, self.files, self.add_prefix('disallowed'))
-        admin_id = self._get_admin_id(field.choices)
-        if str(admin_id) not in selected_values:
-            raise forms.ValidationError(self.ERR_ADMIN_IN_DISALLOWED)
-
-    def _clean_fields(self):
-        field = self.fields['disallowed']
-
-        #this is a list of ids like ['1', '4', 'disallowed_2', 'disallowed_5', ...]
-        # !! Notice the fake ids like 'disallowed_2' and 'disallowed_5'
-        # (see robots.helpers.get_choices(...))
-        selected_values = field.widget.value_from_datadict(self.data, self.files, self.add_prefix('disallowed'))
-
-        # As some of the ids in selected_values for disallowed urls
-        #  are not db ids (eg disallowed_2), I need to save in db the
-        #  coresponding patterns in order to get real db ids. The fake ids
-        #  in selected_values and field.choices will be replaced with the
-        #  real ids.
-        if selected_values:
-            for i, choice in enumerate(field.choices):
-                # choice is a pair like ['id', '/pattern/']
-                if choice[0] in selected_values and choice[0].startswith(ID_PREFIX):
-                    url = Url.objects.create(pattern=choice[1])
-                    selected_values[selected_values.index(choice[0])] = str(url.id)
-                    field.choices[i][0] = str(url.id)
-
-        # Here all the ids for disallowed selected_values have real db ids,
-        #  so calling super(...)._clean_fields() will not throw Validation
-        #  error for the selected disallowed patterns
-        super(RuleAdminForm, self)._clean_fields()
+        # set default value
+        return (self.cleaned_data.get('disallowed') or []) + get_url(ADMIN)

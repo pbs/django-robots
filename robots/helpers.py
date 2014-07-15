@@ -14,16 +14,6 @@ from django.core.urlresolvers import reverse, resolve
 from robots.models import Url
 from robots.settings import EXCLUDE_URL_NAMES
 
-ID_PREFIX = 'disallowed'
-
-
-def get_site_id(data, instance, sites_field):
-    if instance and instance.id:
-        id = instance.sites.all()[0].id
-    else:
-        id = sites_field.choices.queryset[0].id
-    return data.get('sites', id)
-
 
 def get_url(pattern):
     try:
@@ -95,7 +85,7 @@ def get_choices(site, protocol='http'):
             if resolve(url).url_name not in EXCLUDE_URL_NAMES
         ]
         return urls
-        
+
     with patch(settings, fetch_urls, SITE_ID=site.pk) as result:
         sitemap_urls = result
     site_urls = [admin_url] + sitemap_urls

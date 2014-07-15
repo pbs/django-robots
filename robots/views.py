@@ -7,14 +7,6 @@ from django.contrib.sites.models import Site
 from robots.models import Rule
 from robots import settings
 
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
-
-from robots.helpers import get_choices, get_url
-from robots.settings import ADMIN
-from django.forms import SelectMultiple
-from django.utils.safestring import mark_safe
-
 
 def rules_list(request, template_name='robots/rule_list.html',
                mimetype='text/plain', status_code=200):
@@ -50,31 +42,6 @@ def rules_list(request, template_name='robots/rule_list.html',
         'sitemap_urls': sitemap_urls,
     })
     return HttpResponse(t.render(c), status=status_code, mimetype=mimetype)
-
-
-@login_required
-def site_patterns(request):
-    if not request.is_ajax():
-        return HttpResponseForbidden()
-
-    site_id = request.GET.get('site_id', '')
-    if site_id:
-        try:
-            site = Site.objects.get(pk=site_id)
-            protocol = 'https' if request.is_secure() else 'http'
-
-            widget = SelectMultiple()
-            widget.choices = get_choices(site, protocol)
-
-            attrs = {'id': u'id_disallowed', 'class': 'selectfilter'}
-            output = [widget.render('disallowed', [get_url(ADMIN).id], attrs=attrs, choices=())]
-
-            return HttpResponse(mark_safe(u''.join(output)))
-
-        except Site.DoesNotExist:
-            pass
-    return HttpResponse('')
-
 
 if settings.CACHE_TIMEOUT:
     rules_list = cache_page(rules_list, settings.CACHE_TIMEOUT)
