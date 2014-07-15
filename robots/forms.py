@@ -75,4 +75,6 @@ class RuleAdminForm(forms.ModelForm):
 
     def clean_disallowed(self):
         # set default value
-        return (self.cleaned_data.get('disallowed') or []) + get_url(ADMIN)
+        submitted = list(self.cleaned_data.get('disallowed') or [])
+        submitted.append(get_url(ADMIN))
+        return submitted

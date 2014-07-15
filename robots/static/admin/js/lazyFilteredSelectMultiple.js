@@ -20,6 +20,7 @@ function _add_choices(select_el, items){
     django.jQuery(items).each(function(i, v){
         select_el.append(django.jQuery("<option>", { value: v[0], html: v[1] }));
     });
+    SelectBox.init(select_el.attr('id'));
     select_el.css('opacity', '1');
     select_el.parent().find('img.spinner').remove()
 }
