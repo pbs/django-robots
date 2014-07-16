@@ -64,17 +64,13 @@ def head2unicode((head, tail)):
     return [force_unicode(head), tail]
 
 
-exclude_patterns = []
-
-
 def get_choices(site, protocol='http'):
     """
         Returns a list of choices(id, pattern pairs) for Url objects
     that have patterns generated from sitemaps.
     """
-    if EXCLUDE_URL_NAMES and not exclude_patterns:
-        exclude_patterns = map(lambda view: get_view_urlpattern_data(view)[1],
-                               EXCLUDE_URL_NAMES)
+    exclude_patterns = map(lambda view: get_view_urlpattern_data(view)[1],
+                           EXCLUDE_URL_NAMES)
 
     def should_exclude(url):
         """
