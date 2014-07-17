@@ -90,7 +90,8 @@ class Rule(models.Model):
 
     @property
     def site(self):
-        if self.pk:
+        try:
             return self.sites.all()[0]
-        return None
+        except (IndexError, ValueError):
+            return None
 

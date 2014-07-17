@@ -3,12 +3,12 @@ from django.conf.urls.defaults import patterns, url
 from django.http import HttpResponseForbidden, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
+from django.utils.encoding import force_unicode
 from django.utils.text import get_text_list
 from django.contrib.sites.models import Site
 from robots.settings import ADMIN
 from robots import forms as robots_forms
 from robots.models import Rule, Url
-from robots.helpers import get_url, get_choices
 import json
 
 
@@ -42,6 +42,8 @@ class RuleAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         super(RuleAdmin, self).save_model(request, obj, form, change)
+        from robots.helpers import get_url
+
         all_pattern = get_url('/')
         obj.allowed.add(all_pattern)
         # make sure it will get set for new rules
@@ -62,17 +64,18 @@ class RuleAdmin(admin.ModelAdmin):
 
     def get_form(self, request, obj=None, **kwargs):
         self._reset_fields('add' if not obj else 'change')
-        formCls = super(RuleAdmin, self).get_form(request, obj, **kwargs)
+        form_cls = super(RuleAdmin, self).get_form(request, obj, **kwargs)
 
-        if getattr(formCls, 'requires_request', False):
+        if getattr(form_cls, 'requires_request', False):
 
-            class RequestFormClass(formCls):
+            class RequestFormClass(form_cls):
+
                 def __new__(cls, *args, **kwargs):
                     kwargs.update({"request": request})
-                    return formCls(*args, **kwargs)
+                    return form_cls(*args, **kwargs)
 
             return RequestFormClass
-        return formCls
+        return form_cls
 
     def _get_allowed_sites(self, request):
         return super(RuleAdmin, self).formfield_for_manytomany(
@@ -99,15 +102,24 @@ class RuleAdmin(admin.ModelAdmin):
             return HttpResponseForbidden()
 
         rule = get_object_or_404(Rule, id=rule_id)
-        choices = get_choices(Site.objects.get_current(),
-                              'https' if request.is_secure() else 'http')
+        site = rule.site or Site.objects.get_current()
+        from robots.helpers import get_url, get_available_urls
+
         admin_url = get_url(ADMIN)
         # exclude admin url since we're adding it programatically
-        initial = list(rule.disallowed.exclude(
+        initial = dict(rule.disallowed.exclude(
             id=admin_url.id).values_list('id', 'pattern').order_by('pattern'))
-        initial.insert(0, (admin_url.id, admin_url.pattern))
 
-        data = {'choices': choices, 'assigned': initial}
+        protocol = 'https' if request.is_secure() else 'http'
+        available = get_available_urls(site, protocol)\
+            .exclude(id__in=initial.keys())
+
+        as_choices = map(lambda pair: (force_unicode(pair[0]), pair[1]),
+                         available)
+        data = {
+            'choices': as_choices,
+            'assigned': [(admin_url.id, admin_url.pattern)] + initial.items()
+        }
         return HttpResponse(json.dumps(data), content_type="application/json")
 
 

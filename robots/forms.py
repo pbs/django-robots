@@ -3,7 +3,6 @@ from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from robots.models import Rule
 from robots.widgets import FilteredSelect, AjaxFilteredSelectMultiple
-from robots.helpers import get_url
 from robots.settings import ADMIN
 
 
@@ -16,11 +15,14 @@ def _set_cms_site(request, site):
 
 class AddRuleAdminForm(forms.ModelForm):
     requires_request = True
+    sites = forms.ModelChoiceField(
+        queryset=Site.objects.filter(rule__isnull=True),
+        help_text='', label='Site',
+        widget=FilteredSelect())
 
     class Meta:
         model = Rule
         fields = ('sites', )
-        widgets = {'sites': FilteredSelect()}
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
@@ -29,25 +31,22 @@ class AddRuleAdminForm(forms.ModelForm):
 
     def _init_sites(self):
         sites_field = self.fields['sites']
-        sites_field.help_text = ''
-        sites_field.label = 'Site'
         sites_field.widget.can_add_related = False
-        sites_field.queryset = sites_field.queryset.filter(rule__isnull=True)
         current_site = Site.objects.get_current()
         if (not self.initial.get('sites') and
                 sites_field.queryset.filter(id=current_site.id).exists()):
             self.initial['sites'] = current_site
 
     def clean_sites(self):
-        sites = self.cleaned_data.get('sites', [])
-        if not sites or len(sites) > 1:
-            raise forms.ValidationError("One site required.")
-        if Rule.objects.filter(sites=sites).exists():
+        site = self.cleaned_data.get('sites')
+        if not site:
+            raise forms.ValidationError("Site required.")
+        if Rule.objects.filter(sites=site).exists():
             raise forms.ValidationError(
                 "Rule for this site already exists. "
                 "You can change it from the list view.")
-        _set_cms_site(self.request, sites[0])
-        return sites
+        _set_cms_site(self.request, site)
+        return [site]
 
 
 class RuleAdminForm(forms.ModelForm):
@@ -76,5 +75,6 @@ class RuleAdminForm(forms.ModelForm):
     def clean_disallowed(self):
         # set default value
         submitted = list(self.cleaned_data.get('disallowed') or [])
+        from robots.helpers import get_url
         submitted.append(get_url(ADMIN))
         return submitted
