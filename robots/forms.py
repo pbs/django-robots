@@ -73,8 +73,8 @@ class RuleAdminForm(forms.ModelForm):
         disallowed_field.choices = ()
 
     def clean_disallowed(self):
-        # set default value
-        submitted = list(self.cleaned_data.get('disallowed') or [])
         from robots.helpers import get_url
+        submitted = list(self.cleaned_data.get('disallowed') or [])
+        # set default value
         submitted.append(get_url(ADMIN))
         return submitted
