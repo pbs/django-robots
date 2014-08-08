@@ -88,5 +88,10 @@ class Rule(models.Model):
         return get_text_list(list(self.disallowed.all()), _('and'))
     disallowed_urls.short_description = _('disallowed')
 
-    def sites_search(self):
-        return get_text_list(list(self.sites.all()), _('and'))
+    @property
+    def site(self):
+        try:
+            return self.sites.all()[0]
+        except (IndexError, ValueError):
+            return None
+
