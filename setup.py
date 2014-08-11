@@ -10,13 +10,7 @@ setup(
     url='http://github.com/jezdez/django-robots/',
     packages=find_packages(),
     zip_safe=False,
-    package_data = {
-        'robots': [
-            'locale/*/LC_MESSAGES/*',
-            'templates/robots/*.html',
-            'tests/templates/*.html',
-        ],
-    },
+    include_package_data=True,
     classifiers=[
       'Development Status :: 4 - Beta',
       'Environment :: Web Environment',
