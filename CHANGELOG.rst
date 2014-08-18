@@ -1,6 +1,15 @@
 CHANGELOG
 =========
 
+Revision b5339e6 (18.08.2014, 11:48 UTC)
+----------------------------------------
+
+* LUN-1778
+
+  * make sure everything in src folder is installed by pip install
+
+No other commits.
+
 Revision aed905b (08.08.2014, 10:51 UTC)
 ----------------------------------------
 
