@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from robots.models import Rule
-from robots.widgets import FilteredSelect, AjaxFilteredSelectMultiple
+from robots.widgets import AjaxFilteredSelectMultiple
 from robots.settings import ADMIN
 
 
@@ -15,10 +15,6 @@ def _set_cms_site(request, site):
 
 class AddRuleAdminForm(forms.ModelForm):
     requires_request = True
-    sites = forms.ModelChoiceField(
-        queryset=Site.objects.filter(rule__isnull=True),
-        help_text='', label='Site',
-        widget=FilteredSelect())
 
     class Meta:
         model = Rule

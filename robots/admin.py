@@ -6,8 +6,10 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import force_unicode
 from django.utils.text import get_text_list
 from django.contrib.sites.models import Site
+from django import forms as django_forms
 from robots.settings import ADMIN
 from robots import forms as robots_forms
+from robots.widgets import FilteredSelect
 from robots.models import Rule, Url
 import json
 
@@ -77,8 +79,17 @@ class RuleAdmin(admin.ModelAdmin):
             return RequestFormClass
         return form_cls
 
-    def _get_allowed_sites(self, request):
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        if db_field.name == 'sites' and db_field.rel.to == Site:
+            return django_forms.ModelChoiceField(
+                queryset=Site.objects.filter(rule__isnull=True),
+                help_text='', label='Site',
+                widget=FilteredSelect())
         return super(RuleAdmin, self).formfield_for_manytomany(
+            db_field, request, **kwargs)
+
+    def _get_allowed_sites(self, request):
+        return self.formfield_for_manytomany(
             self.model._meta.get_field_by_name('sites')[0], request).queryset
 
     def has_add_permission(self, request):
