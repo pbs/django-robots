@@ -1,6 +1,17 @@
 CHANGELOG
 =========
 
+Revision 1bcc1c3 (25.08.2014, 14:52 UTC)
+----------------------------------------
+
+* LUN-1413
+
+  * fixed sites displayed by permissions in rules add form
+
+* Misc commits
+
+  * include static files
+
 Revision b5339e6 (18.08.2014, 11:48 UTC)
 ----------------------------------------
 
