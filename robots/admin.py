@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.conf.urls.defaults import patterns, url
+from django.conf.urls import patterns, url
 from django.http import HttpResponseForbidden, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
