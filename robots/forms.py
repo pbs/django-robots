@@ -54,6 +54,7 @@ class RuleAdminForm(forms.ModelForm):
             'disallowed': AjaxFilteredSelectMultiple(
                 verbose_name='Disallows', is_stacked=False)
         }
+        exclude = ()
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)

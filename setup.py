@@ -20,5 +20,4 @@ setup(
       'Programming Language :: Python',
       'Framework :: Django',
     ],
-    setup_requires = ['s3sourceuploader',],
 )
