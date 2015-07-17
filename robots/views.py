@@ -41,7 +41,7 @@ def rules_list(request, template_name='robots/rule_list.html',
         'sitemap_url': sitemap_url, # for old templates
         'sitemap_urls': sitemap_urls,
     })
-    return HttpResponse(t.render(c), status=status_code, mimetype=mimetype)
+    return HttpResponse(t.render(c), status=status_code, content_type=mimetype)
 
 if settings.CACHE_TIMEOUT:
     rules_list = cache_page(rules_list, settings.CACHE_TIMEOUT)

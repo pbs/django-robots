@@ -13,7 +13,7 @@ INSTALLED_APPS = [
     'sekizai',
     'robots',
 ]
-
+SECRET_KEY = 'secret'
 CMS_PERMISSION = True
 STATIC_ROOT = '/static/'
 STATIC_URL = '/static/'
