@@ -1,6 +1,16 @@
 CHANGELOG
 =========
 
+Revision 237c3fb (17.07.2015, 09:24 UTC)
+----------------------------------------
+
+No new issues.
+
+* Misc commits
+
+  * Django 1.7 upgrade: added migrations; fixed deprecation warnings
+  * Django 1.6 upgrade: fixed urls imports
+
 Revision 1bcc1c3 (25.08.2014, 14:52 UTC)
 ----------------------------------------
 
