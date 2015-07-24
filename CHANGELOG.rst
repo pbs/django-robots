@@ -1,6 +1,15 @@
 CHANGELOG
 =========
 
+Revision b480171 (24.07.2015, 14:41 UTC)
+----------------------------------------
+
+No new issues.
+
+* Misc commits
+
+  * tox: Don't allow django 1.8 prereleases
+
 Revision 237c3fb (17.07.2015, 09:24 UTC)
 ----------------------------------------
 
