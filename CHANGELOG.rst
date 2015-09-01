@@ -1,6 +1,15 @@
 CHANGELOG
 =========
 
+Revision 137a6c5 (01.09.2015, 14:43 UTC)
+----------------------------------------
+
+* LUN-2576
+
+  * filter and buttons styled according Ace
+
+No other commits.
+
 Revision b480171 (24.07.2015, 14:41 UTC)
 ----------------------------------------
 
