@@ -10,8 +10,8 @@
     });
 })(django.jQuery);
 </script>
-<div class="submit-row">
-<input type="submit" value="{% trans 'Next' %}" name="_continue" {{ onclick_attrib }}/>
+<div class="submit-row form-actions text-right no-margin-bottom no-background">
+<input type="submit" value="{% trans 'Next' %}" name="_continue" {{ onclick_attrib }} class="btn btn-primary"/>
 </div>
 {% else %}
 {{block.super}}

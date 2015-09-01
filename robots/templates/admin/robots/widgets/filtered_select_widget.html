@@ -1,7 +1,8 @@
 {% spaceless %}
-<div style="float: left;">
-    <img src="{{ STATIC_URL }}admin/img/selector-search.gif" class="help-tooltip" style="margin-bottom:10px;" alt="" title="Type into this box to filter down the list of available Sites." />
-    <input type="text" placeholder="Filter" id="id_{{field_name}}_filter_choices" style="margin-bottom:10px; width: 188px"><br>
+<div>
+    <input type="text" placeholder="Filter" id="id_{{field_name}}_filter_choices" style="margin-bottom:10px;">
+    <span class="help-button" data-rel="popover" data-trigger="hover" data-placement="right" data-content="Type into this box to filter down the list of available Sites." data-original-title="" title="">?</span>
+    <br>
     {{ select_widget_output }}
     <script type="text/javascript">
        (function ($) {
