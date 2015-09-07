@@ -18,10 +18,6 @@ CMS_PERMISSION = True
 STATIC_ROOT = '/static/'
 STATIC_URL = '/static/'
 ROOT_URLCONF = 'robots.tests.urls'
-TEMPLATE_CONTEXT_PROCESSORS = (
-    'django.core.context_processors.request',
-    'django.contrib.auth.context_processors.auth',
-)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -45,15 +41,6 @@ import os
 HERE = os.path.dirname(os.path.realpath(__file__))
 gettext = lambda s: s
 
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
-    'django.template.loaders.eggs.Loader',
-)
-
-TEMPLATE_DIRS = (
-    os.path.join(HERE, 'templates'),
-)
 from djangotoolbox.utils import make_tls_property
 from django.conf import settings
 settings.__class__.SITE_ID = make_tls_property()
@@ -62,3 +49,23 @@ settings.__class__.SITE_ID.value = 1
 CMS_TEMPLATES = (
     ('test.html', gettext('test one')),
 )
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': (
+            os.path.join(HERE, 'templates'),
+        ),
+        'OPTIONS': {
+            'context_processors': (
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+            ),
+            'loaders': (
+                'django.template.loaders.filesystem.Loader',
+                'django.template.loaders.app_directories.Loader',
+                'django.template.loaders.eggs.Loader',
+            ),
+        },
+    },
+]
