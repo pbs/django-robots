@@ -1,6 +1,6 @@
 from django.contrib.sites.models import Site
 from django.contrib.auth.models import User
-from django.utils.importlib import import_module
+from importlib import import_module
 from django.test.utils import override_settings
 from django.core.urlresolvers import reverse
 from django.test import TestCase
