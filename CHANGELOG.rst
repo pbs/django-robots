@@ -1,6 +1,16 @@
 CHANGELOG
 =========
 
+Revision c40689d (23.09.2015, 15:25 UTC)
+----------------------------------------
+
+No new issues.
+
+* Misc commits
+
+  * Django 1.8: removed deprecation warnings
+  * Django 1.8 upgrade: updated tox deps & test settings
+
 Revision 137a6c5 (01.09.2015, 14:43 UTC)
 ----------------------------------------
 
