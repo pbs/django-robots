@@ -1,6 +1,15 @@
 CHANGELOG
 =========
 
+Revision 50896af (26.08.2016, 07:24 UTC)
+----------------------------------------
+
+No new issues.
+
+* Misc commits
+
+  * Use PBS version in tests.
+
 Revision c40689d (23.09.2015, 15:25 UTC)
 ----------------------------------------
 
